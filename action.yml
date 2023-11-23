@@ -1,0 +1,92 @@
+name: 'Github Docker tag delete'
+description: 'Action allows you to remove Docker tag from the package repository in Github'
+inputs:
+  tag_name:
+    description: 'Name of Docker tag to delete'
+    required: true
+  github_token:
+    description: 'GITHUB_TOKEN is required to login to Container registry and use Github API'
+    required: true
+  is_organization:
+    description: 'Organization accounts have different API endpoints. Set this to true to use it within org'
+    required: false
+    type: boolean
+    default: false
+    
+# The Action can be used from a private repository. If so, the following inputs must be used.
+  private_repo_link:
+    description: 'Repository where the Action is stored'
+    default: 'rafalkk/remove-dockertag-action'
+  private_repo_token:
+    description: 'GITHUB_TOKEN with access to private repository'
+    default: ''
+
+runs:
+  using: "composite"  
+  steps:    
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        repository: ${{ inputs.private_repo_link }}
+        token: ${{ inputs.private_repo_token }}
+
+    - name: Log in to the Container registry
+      uses: docker/login-action@v3.0.0
+      with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ inputs.github_token }}
+
+# CURRENT_TIME is needed to create dummy Docker image. REPO_NAME is made using bash parameter expansion. GITHUB_ENV store vars within job.
+    - name: Set ENV variables
+      shell: bash
+      run: | 
+        echo "CURRENT_TIME=$(date +%Y-%m-%d_%H-%M-%S)" >> $GITHUB_ENV
+        echo "REPO_NAME=${GITHUB_REPOSITORY#$GITHUB_REPOSITORY_OWNER/}" >> $GITHUB_ENV
+
+    - name: Check if user or organization
+      shell: bash
+      run: |
+        if [ ${{ inputs.is_organization }} == "true" ]; then
+          echo "The boolean input is set to true => orgs api endpoint"
+          echo "GH_API_PREFIX=orgs" >> $GITHUB_ENV
+        else
+          echo "The boolean input is set to false => users api endpoint"
+          echo "GH_API_PREFIX=users" >> $GITHUB_ENV
+        fi
+
+# Dummy Docker image is created and pushed to Github package repository.
+    - name: Build and push Docker image
+      id: build-push-action
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        build-args: |
+          TIME_STAMP=$CURRENT_TIME
+        push: true
+        tags: ghcr.io/${{ github.repository }}:${{ inputs.tag_name }}
+
+# Look for the package that was created in the previous step using its digest.
+    - name: Get package id
+      shell: bash
+      run: |
+          GH_package_id=$(gh api \
+          -H "Accept: application/vnd.github+json" \
+          -H "X-GitHub-Api-Version: 2022-11-28" \
+          /${{env.GH_API_PREFIX}}/${{github.repository_owner}}/packages/container/${{env.REPO_NAME}}/versions | \
+          jq -r '.[] | select(.name == "${{ steps.build-push-action.outputs.digest }}") | .id')
+          echo "GH_package_id=$GH_package_id" >> $GITHUB_ENV
+      env:
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+
+# Delete the package using the ID found in the previous step.
+    - name: Delete package by id
+      shell: bash
+      run: |
+        gh api \
+        --method DELETE \
+        -H "Accept: application/vnd.github+json" \
+        -H "X-GitHub-Api-Version: 2022-11-28" \
+        /${{env.GH_API_PREFIX}}/${{github.repository_owner}}/packages/container/${{env.REPO_NAME}}/versions/${{env.GH_package_id}}
+      env:
+        GITHUB_TOKEN: ${{ inputs.github_token }}
