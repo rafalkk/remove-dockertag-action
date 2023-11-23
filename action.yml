@@ -16,19 +16,25 @@ inputs:
 # The Action can be used from a private repository. If so, the following inputs must be used.
   private_repo_link:
     description: 'Repository where the Action is stored'
-    default: 'rafalkk/remove-dockertag-action'
+    default: ''
   private_repo_token:
     description: 'GITHUB_TOKEN with access to private repository'
-    #default: ''
+    default: ''
 
 runs:
   using: "composite"  
-  steps:    
-    - name: Checkout repository
+  steps: 
+    - name: Checkout if private repository
+      if: ${{ inputs.private_repo_token != '' }}
       uses: actions/checkout@v4
       with:
         repository: ${{ inputs.private_repo_link }}
-        #token: ${{ inputs.private_repo_token }}
+        token: ${{ inputs.private_repo_token }}
+   
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        repository: rafalkk/remove-dockertag-action
 
     - name: Log in to the Container registry
       uses: docker/login-action@v3.0.0
