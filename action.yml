@@ -25,14 +25,14 @@ runs:
   using: "composite"  
   steps: 
     - name: Checkout if private repository
-      if: ${{ private_repo_link != '' }}
+      if: ${{ inputs.private_repo_link != '' }}
       uses: actions/checkout@v4
       with:
         repository: ${{ inputs.private_repo_link }}
         token: ${{ inputs.private_repo_token }}
    
     - name: Checkout repository
-      if: ${{ private_repo_link == '' }}
+      if: ${{ inputs.private_repo_link == '' }}
       uses: actions/checkout@v4
       with:
         repository: rafalkk/remove-dockertag-action
