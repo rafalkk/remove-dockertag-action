@@ -19,7 +19,7 @@ inputs:
     default: 'rafalkk/remove-dockertag-action'
   private_repo_token:
     description: 'GITHUB_TOKEN with access to private repository'
-    default: ''
+    #default: ''
 
 runs:
   using: "composite"  
