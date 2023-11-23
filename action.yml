@@ -28,7 +28,7 @@ runs:
       uses: actions/checkout@v4
       with:
         repository: ${{ inputs.private_repo_link }}
-        token: ${{ inputs.private_repo_token }}
+        #token: ${{ inputs.private_repo_token }}
 
     - name: Log in to the Container registry
       uses: docker/login-action@v3.0.0
