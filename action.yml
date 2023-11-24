@@ -13,10 +13,7 @@ inputs:
     type: boolean
     default: false
     
-# The Action can be used from a private repository. If so, the following inputs must be used.
-  # private_repo_link:
-  #   description: 'Repository where the Action is stored'
-  #   default: ''
+# The Action can be used from a private repository. If so, the following input must be used.
   private_repo_token:
     description: 'GITHUB_TOKEN with access to private repository'
     default: ''
@@ -24,9 +21,9 @@ inputs:
 runs:
   using: "composite"  
   steps: 
-    - name: What is in contex
+    - name: Check for tag
       shell: bash
-      run: echo "${{ toJson(github) }}"
+      run: echo "this is v1 version"
 
     - name: Checkout if private repository
       if: ${{ inputs.private_repo_token != '' }}
