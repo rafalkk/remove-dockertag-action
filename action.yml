@@ -21,10 +21,6 @@ inputs:
 runs:
   using: "composite"  
   steps: 
-    - name: Check for tag
-      shell: bash
-      run: echo "this is v2 version"
-
     - name: Checkout if private repository
       if: ${{ inputs.private_repo_token != '' }}
       uses: actions/checkout@v4
@@ -56,6 +52,7 @@ runs:
         echo "CURRENT_TIME=$(date +%Y-%m-%d_%H-%M-%S)" >> $GITHUB_ENV
         echo "REPO_NAME=${GITHUB_REPOSITORY#$GITHUB_REPOSITORY_OWNER/}" >> $GITHUB_ENV
 
+# Check if is_organization is true, if so change GH_API_PREFIX env accordingly.
     - name: Check if user or organization
       shell: bash
       run: |
