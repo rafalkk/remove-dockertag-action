@@ -23,7 +23,7 @@ runs:
   steps: 
     - name: Check for tag
       shell: bash
-      run: echo "this is v1 version"
+      run: echo "this is v2 version"
 
     - name: Checkout if private repository
       if: ${{ inputs.private_repo_token != '' }}
