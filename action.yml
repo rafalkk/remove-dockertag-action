@@ -24,6 +24,11 @@ inputs:
 runs:
   using: "composite"  
   steps: 
+    - name: print contex
+      shell: bash
+      run: | 
+        echo ";;;; ${{ github.action_repository }} --- github.action_repository "
+        echo ";;;; ${{ github.repository }} --- github.repository "
     - name: Checkout if private repository
       if: ${{ inputs.private_repo_token != '' }}
       uses: actions/checkout@v4
