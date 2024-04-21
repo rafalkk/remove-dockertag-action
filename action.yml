@@ -64,6 +64,13 @@ runs:
           echo "GH_API_PREFIX=users" >> $GITHUB_ENV
         fi
 
+    - name: Lowercase Repo Name and Tag
+      id: repo-name-and-tag
+      shell: bash
+      run: |
+        IMG_NAME=$(echo "${{ github.repository }}:${{ inputs.tag_name }}" | tr '[:upper:]' '[:lower:]')
+        echo "::set-output name=name::$IMG_NAME"
+
 # Dummy Docker image is created and pushed to Github package repository.
     - name: Build and push Docker image
       id: build-push-action
@@ -73,7 +80,7 @@ runs:
         build-args: |
           TIME_STAMP=$CURRENT_TIME
         push: true
-        tags: ghcr.io/${{ github.repository }}:${{ inputs.tag_name }}
+        tags: ghcr.io/${{ steps.repo-name-and-tag.outputs.name }}
 
 # Look for the package that was created in the previous step using its digest.
     - name: Get package id
@@ -82,7 +89,7 @@ runs:
           GH_package_id=$(gh api \
           -H "Accept: application/vnd.github+json" \
           -H "X-GitHub-Api-Version: 2022-11-28" \
-          /${{env.GH_API_PREFIX}}/${{github.repository_owner}}/packages/container/${{env.REPO_NAME}}/versions | \
+          $(echo "/${{env.GH_API_PREFIX}}/${{github.repository_owner}}/packages/container/${{env.REPO_NAME}}/versions" | tr '[:upper:]' '[:lower:]') | \
           jq -r '.[] | select(.name == "${{ steps.build-push-action.outputs.digest }}") | .id')
           echo "GH_package_id=$GH_package_id" >> $GITHUB_ENV
       env:
@@ -96,6 +103,6 @@ runs:
         --method DELETE \
         -H "Accept: application/vnd.github+json" \
         -H "X-GitHub-Api-Version: 2022-11-28" \
-        /${{env.GH_API_PREFIX}}/${{github.repository_owner}}/packages/container/${{env.REPO_NAME}}/versions/${{env.GH_package_id}}
+        $(echo "/${{env.GH_API_PREFIX}}/${{github.repository_owner}}/packages/container/${{env.REPO_NAME}}/versions/${{env.GH_package_id}}" | tr '[:upper:]' '[:lower:]')
       env:
         GITHUB_TOKEN: ${{ inputs.github_token }}
