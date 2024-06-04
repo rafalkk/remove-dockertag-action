@@ -63,7 +63,7 @@ jobs:
     - name: Remove Docker Tag
       uses: rafalkk/remove-dockertag-action@v1
       with:
-        tag-name: main
+        tag_name: main
         github_token: ${{ secrets.GITHUB_TOKEN }}
 ```
 
@@ -89,7 +89,7 @@ jobs:
     - name: Remove Docker Tag
       uses: my-private-tools-repo/remove-dockertag-action@v1
       with:
-        tag-name: main
+        tag_name: main
         github_token: ${{ secrets.GITHUB_TOKEN }}
         private_repo_token: ${{ secrets.my_private_tools_repo_token }}
 ```
