@@ -68,7 +68,6 @@ runs:
     - name: Lowercase repository
       shell: bash
       run: |
-        GITHUB_REPOSITORY="${{ github.repository }}"
         echo "GITHUB_REPOSITORY_LOWERCASE=${GITHUB_REPOSITORY@L}" >> $GITHUB_ENV
 
 # Dummy Docker image is created and pushed to Github package repository.
