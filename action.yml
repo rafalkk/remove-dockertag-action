@@ -64,6 +64,11 @@ runs:
           echo "GH_API_PREFIX=users" >> $GITHUB_ENV
         fi
 
+  # Lowercase repository name using Bash Shell Parameter Expansion
+      - name: Lowercase repository
+        run: |
+            echo "GITHUB_REPOSITORY_LOWERCASE=${${{ github.repository }}@L}" >> $GITHUB_ENV
+
 # Dummy Docker image is created and pushed to Github package repository.
     - name: Build and push Docker image
       id: build-push-action
@@ -73,7 +78,7 @@ runs:
         build-args: |
           TIME_STAMP=$CURRENT_TIME
         push: true
-        tags: ghcr.io/${{ github.repository }}:${{ inputs.tag_name }}
+        tags: ghcr.io/${{ env.GITHUB_REPOSITORY_LOWERCASE }}:${{ inputs.tag_name }}
 
 # Look for the package that was created in the previous step using its digest.
     - name: Get package id
